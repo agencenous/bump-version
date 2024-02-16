@@ -5,7 +5,8 @@
 # Check if the version is passed as an argument
 if [ -z "$1" ]
   then
-    echo "No version supplied. $0 x.y.z"
+    echo "No version supplied. Call bump with the new version number as an argument."
+    echo "$0 x.y.z"
     exit 1
 fi
 
