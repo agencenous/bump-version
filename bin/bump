@@ -3,6 +3,18 @@
 # This script updates the version of the project in all .php, .js, .json and .md files
 
 # Check if the version is passed as an argument
+if [ "$1" == "-h" ]; then
+  echo "";
+  echo "  bump";
+  echo "";
+  echo "  Updates the version of the project in all .php, .js, .json and .md files"
+  echo "";
+  echo "  Usage: vendor/bin/bump [version]"
+  echo "";
+  exit 0
+fi
+
+# Check if the version is passed as an argument
 if [ -z "$1" ]
   then
     echo "No version supplied. Call bump with the new version number as an argument."
