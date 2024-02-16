@@ -15,7 +15,10 @@ fi
 
 # Show version form composer .json with -v argument
 if [ "$1" == "-v" ]; then
-  grep '"version":' composer.json
+  script_dir=$(dirname "$0")
+  root_dir=$(dirname "$script_dir")
+  composer_json_path="$root_dir/composer.json"
+  grep '"version":' $composer_json_path
   exit 0
 fi
 
