@@ -2,7 +2,7 @@
     "name": "agencenous/bump-version",
     "description": "Bump version in source files",
     "type": "project",
-    "license": "GPLv3",
+    "license": "GPL-3.0",
     "minimum-stability": "dev",
     "authors": [
         {
