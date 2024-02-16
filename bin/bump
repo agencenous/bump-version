@@ -1,0 +1,29 @@
+# !/bin/bash
+
+# This script updates the version of the project in all .php, .js and .md files
+
+# Check if the version is passed as an argument
+if [ -z "$1" ]
+  then
+    echo "No version supplied. $0 x.y.z"
+    exit 1
+fi
+
+# Check if the version is a valid version
+if [[ $1 =~ ^[0-9]*\.[0-9]*\.[0-9]*$ ]] ; then
+    echo "Invalid version number: ($1). Please provide a version number in the format x.y.z"
+    exit 1
+fi
+
+SUBDIR=$(basename "$(pwd)")
+
+# Loop through all .php files not in $SUBDIR/vendor and replace the version with the new version
+for file in $(find . \( -name "*.php" -not -path "./$SUBDIR/vendor/*" -not -path "./node_modules/*" \) -o \( -name "*.md" -not -path "./$SUBDIR/vendor/*" -not -path "./node_modules/*" \) -o \( -name "*.js" -not -path "./$SUBDIR/vendor/*" -not -path "./node_modules/*" \))
+do
+  sed -i "s/Version: [0-9]*\.[0-9]*\.[0-9]*/Version: $1/g" $file
+  sed -i "s/\@version  [0-9]*\.[0-9]*\.[0-9]*/\@version  $1/g" $file
+  sed -i "s/\Stable tag: [0-9]*\.[0-9]*\.[0-9]*/\Stable tag: $1/g" $file
+  echo "Updated version in $file"
+done
+
+echo "Updated version to $1"
