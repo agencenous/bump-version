@@ -3,12 +3,19 @@
 # Help
 if [ "$1" == "-h" ]; then
   echo "";
-  echo "  bump";
-  echo "";
+  echo "  bump x.y.z";
   echo "  Updates the version of the project in all .php, .js, .json, .xml and .md files"
-  echo "";
   echo "  Usage: vendor/bin/bump [version]"
   echo "";
+  echo "-h: Show this help";
+  echo "-v: Show the current version";
+  echo "";
+  exit 0
+fi
+
+# Show version form composer .json with -v argument
+if [ "$1" == "-v" ]; then
+  grep '"version":' composer.json
   exit 0
 fi
 
@@ -16,7 +23,7 @@ fi
 if [ -z "$1" ]
   then
     echo "No version supplied. Call bump with the new version number as an argument."
-    echo "$0 x.y.z"
+    echo "$0 -h for help."
     exit 1
 fi
 
