@@ -15,10 +15,8 @@ if [[ $1 =~ ^[0-9]*\.[0-9]*\.[0-9]*$ ]] ; then
     exit 1
 fi
 
-SUBDIR=$(basename "$(pwd)")
-
-# Loop through all .php files not in $SUBDIR/vendor and replace the version with the new version
-for file in $(find . \( -name "*.php" -not -path "./$SUBDIR/vendor/*" -not -path "./node_modules/*" \) -o \( -name "*.md" -not -path "./$SUBDIR/vendor/*" -not -path "./node_modules/*" \) -o \( -name "*.js" -not -path "./$SUBDIR/vendor/*" -not -path "./node_modules/*" \))
+# Loop through all .php, .js and .md files not in vendor or node_modules and replace the version with the new version
+for file in $(find . \( -name "*.php" -not -path "*/vendor/*" -not -path "*/node_modules/*" \) -o \( -name "*.md" -not -path "*/vendor/*" -not -path "*/node_modules/*" \) -o \( -name "*.js" -not -path "*/*" -not -path "*/node_modules/*" \))
 do
   sed -i "s/Version: [0-9]*\.[0-9]*\.[0-9]*/Version: $1/g" $file
   sed -i "s/\@version  [0-9]*\.[0-9]*\.[0-9]*/\@version  $1/g" $file
