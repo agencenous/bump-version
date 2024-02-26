@@ -14,4 +14,4 @@ composer require --dev agencenous/bump-version
 vendor/bin/bump 1.0.0
 ```
 
-Replace `1.0.0` with the version you want to bump to.
+Replace the current version with `1.0.0`.
