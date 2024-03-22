@@ -37,7 +37,7 @@ if ! [[ $1 =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 fi
 
 # Loop through all .php, .js, .json and .md files not in vendor or node_modules and replace the version with the new version
-for file in $(find . -type f \( -regex '.*\.\(php\|md\|js\|json\|xml\)$' -not -path "*package-lock*" -not -path "*/vendor/*" -not -path "*/node_modules/*" \))
+for file in $(find . -type f \( -regex '.*\.\(php\|md\|js\|json\|xml\)$' -not -path "*package-lock*" -not -path "*/vendor/*" -not -path "*/node_modules/*" -not -path "*/cache/*" \))
 do
   sed -i -E "s/(Version:(\s*)|@version(\s*)|Stable tag:\s*)[0-9]+\.[0-9]+\.[0-9]+/\1$1/g" "$file"
   sed -i -E "s/(\"version\":\s*)\"[0-9]+\.[0-9]+\.[0-9]+\"/\1\"$1\"/g" "$file"
