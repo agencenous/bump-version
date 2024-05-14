@@ -1,48 +1,103 @@
-#!/bin/bash
+#!/usr/bin/env php
 
-# Help
-if [ "$1" == "-h" ]; then
+<?php
+
+// Help
+if ($argv[1] == "-h") {
   echo "";
-  echo "  bump x.y.z";
-  echo "  Updates the version of the project in all .php, .js, .json, .xml and .md files"
-  echo "  Usage: vendor/bin/bump [version]"
+  echo "  bump x.y.z [--format / -f formats] [--exclude-dirs / -e excluded_directories]";
+  echo "  Updates the version of the project in specified file formats";
+  echo "  Usage: vendor/bin/bump [version] [--format / -f formats] [--exclude-dirs / -e excluded_directories]";
+  echo "  Formats: php, md, js, json, xml (separated by commas, no spaces)";
+  echo "  Excluded directories: separated by commas, no spaces";
   echo "";
   echo "-h: Show this help";
   echo "-v: Show the current version";
-  echo "";
-  exit 0
-fi
+  "";
+  exit(0);
+}
 
-# Show version form composer .json with -v argument
-if [ "$1" == "-v" ]; then
-  script_dir=$(dirname "$0")
-  root_dir=$(dirname "$script_dir")
-  composer_json_path="$root_dir/composer.json"
-  grep '"version":' $composer_json_path
-  exit 0
-fi
+// Show version from composer .json with -v argument
+if ($argv[1] == "-v") {
+  $script_dir = dirname(__FILE__);
+  $root_dir = dirname($script_dir);
+  $composer_json_path = "$root_dir/composer.json";
+  echo shell_exec("grep '\"version\":' $composer_json_path");
+  exit(0);
+}
 
-# Check if the version is passed as an argument
-if [ -z "$1" ]
-  then
-    echo "No version supplied. Call bump with the new version number as an argument."
-    echo "$0 -h for help."
-    exit 1
-fi
+// Check if the version is passed as an argument
+if (!isset($argv[1])) {
+  echo "No version supplied. Call bump with the new version number as an argument.\n";
+  echo "$argv[0] -h for help.\n";
+  exit(1);
+}
 
-# Check if the version is a valid version
-if ! [[ $1 =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo "Invalid version number: ($1). Please provide a version number in the format x.y.z"
-    exit 1
-fi
+// Check if the version is a valid version
+if (!preg_match('/^[0-9]+\.[0-9]+\.[0-9]+$/', $argv[1])) {
+    echo "Invalid version number: ($argv[1]). Please provide a version number in the format x.y.z\n";
+    exit(1);
+}
 
-# Loop through all .php, .js, .json and .md files not in vendor or node_modules and replace the version with the new version
-for file in $(find . -type f \( -regex '.*\.\(php\|md\|js\|json\|xml\)$' -not -path "*package-lock*" -not -path "*/vendor/*" -not -path "*/node_modules/*" -not -path "*/cache/*" \))
-do
-  sed -i -E "s/(Version:(\s*)|@version(\s*)|Stable tag:\s*)[0-9]+\.[0-9]+\.[0-9]+/\1$1/g" "$file"
-  sed -i -E "s/(\"version\":\s*)\"[0-9]+\.[0-9]+\.[0-9]+\"/\1\"$1\"/g" "$file"
-  sed -i -E "s/<version>[0-9]+\.[0-9]+\.[0-9]+<\/version>/<version>$1<\/version>/g" "$file"
-  echo "Updated version in $file"
-done
+// Get file formats from arguments
+$formats = array('php', 'md', 'js', 'json', 'xml');
+$excluded_directories = array('vendor', 'node_modules', 'cache');
 
-echo "Updated version to $1"
+for ($i = 2; $i < $argc; $i++) {
+    if ($argv[$i] == '--format' || $argv[$i] == '-f') {
+        if (isset($argv[$i + 1])) {
+            $requested_formats = explode(',', $argv[$i + 1]);
+            foreach ($requested_formats as $format) {
+                if (!in_array($format, $formats)) {
+                    echo "Invalid file format: $format\n";
+                    exit(1);
+                }
+            }
+            $formats = $requested_formats;
+            $i++;
+        } else {
+            echo "Missing argument for --format option\n";
+            exit(1);
+        }
+    } elseif ($argv[$i] == '--exclude-dirs' || $argv[$i] == '-e') {
+        if (isset($argv[$i + 1])) {
+            $excluded_directories = explode(',', $argv[$i + 1]);
+            $i++;
+        } else {
+            echo "Missing argument for --exclude-dirs option\n";
+            exit(1);
+        }
+    }
+}
+
+// Loop through all specified file formats not in excluded directories and replace the version with the new version
+function updateVersionInFiles($directory, $version, $formats, $excluded_directories) {
+    $files = scandir($directory);
+    foreach ($files as $file) {
+        $fullPath = $directory . '/' . $file;
+        if ($file === '.' || $file === '..') {
+            continue;
+        }
+        if (is_dir($fullPath)) {
+            if (!in_array($file, $excluded_directories)) {
+                updateVersionInFiles($fullPath, $version, $formats, $excluded_directories);
+            }
+        } elseif (is_file($fullPath)) {
+            $file_extension = pathinfo($file, PATHINFO_EXTENSION);
+            if (in_array($file_extension, $formats) && !in_array(dirname($fullPath), $excluded_directories)) {
+                $file_contents = file_get_contents($fullPath);
+                $updated_contents = $file_contents;
+                $replacement = "\${1}{$version}";
+                $updated_contents = preg_replace('/(Version:\s*|@version\s*|Stable tag:\s*)[0-9]+\.[0-9]+\.[0-9]+/', $replacement, $updated_contents);
+                $updated_contents = preg_replace('/("version":\s*)"[0-9]+\.[0-9]+\.[0-9]+"/', "\\1\"{$version}\"", $updated_contents);
+                $updated_contents = preg_replace('/<version>[0-9]+\.[0-9]+\.[0-9]+<\/version>/', "<version>{$version}</version>", $updated_contents);
+                if ($file_contents !== $updated_contents) {
+                    file_put_contents($fullPath, $updated_contents);
+                    echo "Updated version in $fullPath\n";
+                }
+            }
+        }
+    }
+}
+updateVersionInFiles(realpath(__DIR__ . DIRECTORY_SEPARATOR . '..'), $argv[1], $formats, $excluded_directories);
+echo "Updated version to {$argv[1]}\n";
