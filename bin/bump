@@ -99,5 +99,5 @@ function updateVersionInFiles($directory, $version, $formats, $excluded_director
         }
     }
 }
-updateVersionInFiles(realpath(__DIR__ . DIRECTORY_SEPARATOR . '..'), $argv[1], $formats, $excluded_directories);
+updateVersionInFiles(getcwd(), $argv[1], $formats, $excluded_directories);
 echo "Updated version to {$argv[1]}\n";
